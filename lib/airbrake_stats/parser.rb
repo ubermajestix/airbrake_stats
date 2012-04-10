@@ -1,3 +1,10 @@
+# TODO cleanup this class, Parser is kind of a bad name.
+# I'm thinking the http stuff could go in its own class
+# and the xml parsing can still happen here.
+#
+# TODO Also these methods need more documentation. I think 
+# some refactoring will naturally fallout of writing
+# docs.
 class AirbrakeStats::Parser
   attr_accessor :error_id
   attr_reader :max_pages
