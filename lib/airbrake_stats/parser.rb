@@ -33,12 +33,13 @@ class AirbrakeStats::Parser
       end
       id = parse_xml(notice, 'id')
       url = parse_xml(notice, 'url')
-      format = parse_xml(notice, 'format')
+      format = parse_xml(notice, 'action-dispatch-request-formats')
       path = parse_xml(notice, 'request-path')
       controller = parse_xml(notice, 'controller')
       error_message = parse_xml(notice, 'error-message')
       action = parse_xml(notice, 'action')
       controller = "#{controller}##{action}"
+      #TODO build up the params hash (excluding action and controller) from the params node.
       #next unless url && agent && path && format
       Map.new(id: id, path: path, format: format, error_message: error_message, url: url, agent: agent, controller: controller )
     end.compact
@@ -121,7 +122,6 @@ class AirbrakeStats::Parser
     notices_xml = AirbrakeStats::Queue.new
     puts "Downloading errors..."
     threads = []
-    # TODO sometimes this craps out. Ususally when we ask for pages > 20
     similar_error_ids.each_slice(4) do |slice|
       threads << Thread.new(slice) do |ids|
         ids.each_with_index do |id, index|
@@ -142,7 +142,9 @@ class AirbrakeStats::Parser
   def parse(path, page = nil)
     params = "?auth_token=#{ENV['AIRBRAKE_TOKEN']}"
     params << "&page=#{page}" if page
-    # puts "#{url}#{path}.xml#{params}"
+    # TODO sometimes this craps out. Ususally when we ask for pages > 20
+    # Error: `sysread_nonblock': Resource temporarily unavailable (Errno::EAGAIN)
+    # should put retry logic in here, i.e. keep trying to get a connection until you can
     response = Http.get("#{url}#{path}.xml#{params}", response: :object)
     parsed_response = Nokogiri::XML(response.body)
     if response.status == 200
