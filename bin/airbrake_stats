@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+require 'airbrake_stats'
+
+
+
+
+
+
+# TODO GEMerize this!
+
+ab_stats = AirbrakeStats.new(ARGV[0])
+
+
+# TODO load up info ahead of time like
+# ab_stats.fetch_data
+
+# print out the stats for the errors
+AirbrakeStats::Format.print(ab_stats.stats(:url), :url)
+AirbrakeStats::Format.print(ab_stats.stats(:path), :path)
+AirbrakeStats::Format.print(ab_stats.stats(:agent), :agent)
+AirbrakeStats::Format.print(ab_stats.stats(:format), :format)
+AirbrakeStats::Format.print(ab_stats.stats(:controller), :controller)
+AirbrakeStats::Format.print(ab_stats.stats(:error_message), :error_message)
+
+# puts ab_stats.stats(:path).inspect
+# 
+# puts "="*45
+# puts "Agents"
+# puts "="*45
+# puts ab_stats.stats(:agent).inspect
+# 
+# puts "="*45
+# puts "Formats"
+# puts "="*45
+# puts ab_stats.stats(:format).inspect
+
+
