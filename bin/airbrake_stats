@@ -2,7 +2,7 @@
 
 require 'airbrake_stats'
 
-ab_stats = AirbrakeStats.new(ARGV[0])
+ab_stats = AirbrakeStats::Parser.new(ARGV[0])
 
 
 # TODO load up info ahead of time like
