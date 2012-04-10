@@ -2,13 +2,6 @@
 
 require 'airbrake_stats'
 
-
-
-
-
-
-# TODO GEMerize this!
-
 ab_stats = AirbrakeStats.new(ARGV[0])
 
 
@@ -22,17 +15,3 @@ AirbrakeStats::Format.print(ab_stats.stats(:agent), :agent)
 AirbrakeStats::Format.print(ab_stats.stats(:format), :format)
 AirbrakeStats::Format.print(ab_stats.stats(:controller), :controller)
 AirbrakeStats::Format.print(ab_stats.stats(:error_message), :error_message)
-
-# puts ab_stats.stats(:path).inspect
-# 
-# puts "="*45
-# puts "Agents"
-# puts "="*45
-# puts ab_stats.stats(:agent).inspect
-# 
-# puts "="*45
-# puts "Formats"
-# puts "="*45
-# puts ab_stats.stats(:format).inspect
-
-
