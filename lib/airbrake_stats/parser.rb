@@ -9,7 +9,8 @@ class AirbrakeStats::Parser
   attr_accessor :error_id
   attr_reader :max_pages
   attr_reader :cache
-  class Error < StandardError; end;
+
+  class AirbrakeStats::Error < StandardError; end;
 
   def initialize(error_id)
     @error_id = error_id
@@ -31,8 +32,10 @@ class AirbrakeStats::Parser
         # errors are caused by bots or "humans"
         agent = "#{agent[2]} #{agent[3]}" 
       end
+      # TODO refactor this crap
       id = parse_xml(notice, 'id')
       url = parse_xml(notice, 'url')
+      #format = parse_xml(otice, 'format')
       format = parse_xml(notice, 'action-dispatch-request-formats')
       path = parse_xml(notice, 'request-path')
       controller = parse_xml(notice, 'controller')
@@ -41,7 +44,25 @@ class AirbrakeStats::Parser
       controller = "#{controller}##{action}"
       #TODO build up the params hash (excluding action and controller) from the params node.
       #next unless url && agent && path && format
-      Map.new(id: id, path: path, format: format, error_message: error_message, url: url, agent: agent, controller: controller )
+      host = parse_xml(notice, 'http-host')
+      accept = parse_xml(notice, 'http-accept')
+      referer = parse_xml(notice, 'http-referer')
+      orig_referer = parse_xml(notice, 'orig-referrer')
+      created_at = parse_xml(notice, 'created-at')
+      day = created_at ? Date.parse(created_at).to_s : nil
+      #next unless url && agent && path && format
+      Map.new(id: id,
+              day: day,
+              path: path,
+              format: format,
+              error_message: error_message,
+              url: url, 
+              agent: agent, 
+              controller: controller, 
+              host: host, 
+              accept: accept,
+              referer: referer,
+              orig_referer: orig_referer )
     end.compact
     cache.store(@similar_errors)
     if @similar_errors.empty?
@@ -122,6 +143,7 @@ class AirbrakeStats::Parser
     notices_xml = AirbrakeStats::Queue.new
     puts "Downloading errors..."
     threads = []
+    # TODO sometimes this craps out. Ususally when we ask for pages > 20
     similar_error_ids.each_slice(4) do |slice|
       threads << Thread.new(slice) do |ids|
         ids.each_with_index do |id, index|
@@ -136,12 +158,21 @@ class AirbrakeStats::Parser
   end
 
   def url
-    @url ||= "https://#{ENV['AIRBRAKE_HOST']}.airbrake.io/errors/#{error_id}"
+    @url ||= (ENV['AIRBRAKE_URL'] || "https://#{ENV['AIRBRAKE_HOST']}.airbrake.io/") + "errors/#{error_id}"
   end
 
+  # TODO use a config object
+  def token
+    @token ||= ENV['AIRBRAKE_TOKEN']
+    raise AirbrakeStats::Error.new('Please provide your api token') unless @token
+    @token
+  end
+  
+
   def parse(path, page = nil)
-    params = "?auth_token=#{ENV['AIRBRAKE_TOKEN']}"
+    params = "?auth_token=#{token}"
     params << "&page=#{page}" if page
+    #puts "#{url}#{path}.xml#{params}"
     # TODO sometimes this craps out. Ususally when we ask for pages > 20
     # Error: `sysread_nonblock': Resource temporarily unavailable (Errno::EAGAIN)
     # should put retry logic in here, i.e. keep trying to get a connection until you can
