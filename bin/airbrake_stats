@@ -9,9 +9,8 @@ ab_stats = AirbrakeStats::Parser.new(ARGV[0])
 # ab_stats.fetch_data
 
 # print out the stats for the errors
-AirbrakeStats::Format.print(ab_stats.stats(:url), :url)
-AirbrakeStats::Format.print(ab_stats.stats(:path), :path)
-AirbrakeStats::Format.print(ab_stats.stats(:agent), :agent)
-AirbrakeStats::Format.print(ab_stats.stats(:format), :format)
-AirbrakeStats::Format.print(ab_stats.stats(:controller), :controller)
-AirbrakeStats::Format.print(ab_stats.stats(:error_message), :error_message)
+
+keys = [:day, :url, :path, :agent, :format, :controller, :error_message, :host, :accept, :referer, :orig_referer]
+keys.each do |key|
+  AirbrakeStats::Format.print(ab_stats.stats(key), key)
+end

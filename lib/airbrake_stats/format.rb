@@ -3,6 +3,7 @@ class AirbrakeStats::Format
     attr_reader :stats
     def print(stats, method)
       @stats = stats
+      @stats.sort_by!{|s| s[method]} if method == :day
       method_width = width(method)
       total_width = width('total')
       puts
